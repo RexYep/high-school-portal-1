@@ -1699,11 +1699,11 @@ Package: `spatie/laravel-permission` for the role/permission store, **plus** han
 
 ### 11.5 File storage
 
-Local disk (`storage/app/private`) behind authenticated controller routes for the MVP; S3-compatible object storage (Cloudflare R2 or Backblaze B2 — both far cheaper than S3 for this workload) once storage grows or the app is deployed behind more than one node. The `files` table abstracts the disk, so the migration is a config change plus a copy job, not a rewrite. **Nothing sensitive is ever placed in `public/`.** See §16.
+Local disk (`storage/app/private`) behind authenticated controller routes for the MVP; S3-compatible object storage (Cloudflare R2 or Backblaze B2 — both far cheaper than S3 for this workload) once storage grows or the app is deployed behind more than one node. The `files` table abstracts the disk, so the migration is a config change plus a copy job, not a rewrite. **Nothing sensitive is ever placed in `public/`.** See §19.
 
 ### 11.6 Notifications
 
-Laravel's notification system with two channels initially (`database`, `mail`), dispatched via queue. A `NotificationDispatcher` service resolves recipients and honours per-user preferences, so controllers never call `Mail::send()` directly. Adding SMS later means writing one channel class. See §15.
+Laravel's notification system with two channels initially (`database`, `mail`), dispatched via queue. A `NotificationDispatcher` service resolves recipients and honours per-user preferences, so controllers never call `Mail::send()` directly. Adding SMS later means writing one channel class. See §18.
 
 ### 11.7 Email
 
@@ -1730,7 +1730,7 @@ Queued work: emails, bulk notification fan-out, PDF/Excel report generation, bul
 ### 11.9 Logging and observability
 
 - **Application log:** daily rotating files, 14-day retention, `warning` and above in production.
-- **Audit log:** database table (§14) — a business record, distinct from technical logs. Never conflate the two.
+- **Audit log:** database table (§17) — a business record, distinct from technical logs. Never conflate the two.
 - **Error tracking:** Sentry free tier, or `log` channel + a daily error digest email if no budget at all.
 - **Query monitoring:** Laravel Debugbar / Telescope in local and staging **only**. Telescope in production is a data-exposure risk and must be excluded from the production dependency set.
 - **Health endpoint:** `/health` returning DB connectivity, queue worker heartbeat, and last successful backup time.
@@ -1752,7 +1752,7 @@ Driver: `file` or `database` initially; Redis only if it is already available.
 
 ### 11.11 API strategy
 
-See §17 in full. Summary: **no public API in the MVP.** Server-rendered web routes only, plus a small number of internal JSON endpoints (`/internal/...`) for interactive screens (schedule conflict check, learner search autocomplete, grade auto-save). Because all business logic lives in services rather than controllers, adding `/api/v1` later is a new thin controller layer over the same services.
+See §20 in full. Summary: **no public API in the MVP.** Server-rendered web routes only, plus a small number of internal JSON endpoints (`/internal/...`) for interactive screens (schedule conflict check, learner search autocomplete, grade auto-save). Because all business logic lives in services rather than controllers, adding `/api/v1` later is a new thin controller layer over the same services.
 
 ### 11.12 Deployment architecture
 
@@ -1924,7 +1924,7 @@ high-school-portal/
 │   └── seeders/
 │       ├── DatabaseSeeder.php
 │       ├── Reference/               # RolesAndPermissions, GradeLevels, Subjects, Transmutation
-│       └── Demo/                    # Realistic demo data (§25) — never run in production
+│       └── Demo/                    # Realistic demo data (§26) — never run in production
 ├── resources/
 │   ├── css/
 │   │   ├── tokens.css               # design tokens — the single source of visual truth
