@@ -51,6 +51,14 @@ Flag the conflict and ask before following the skill's suggestion instead of thi
 **Do not introduce** React, Vue, Inertia, Livewire, htmx, Tailwind, Redis, Docker, or any new
 composer/npm package without asking first. Adding a dependency is a decision, not an implementation
 detail.
+**Decided package choices (do not re-ask):**
+- Audit trail: hand-written `AuditObserver` + `AuditService` in `app/Services/Support/`. Do NOT
+  install `owen-it/laravel-auditing` — full control over reason codes and redaction is required.
+- No `app/Actions/` layer. Services only, until a specific service method genuinely needs splitting.
+- `spatie/laravel-backup` and `spatie/laravel-query-builder` are approved for later phases
+  (deployment, reporting) — do not install either until the phase that needs it.
+- Local dev uses host tools (`php artisan`, `composer`, `npm` directly against a local MySQL
+  install via Workbench) — not Laravel Sail, even though Sail ships in the default skeleton.
 
 ---
 
