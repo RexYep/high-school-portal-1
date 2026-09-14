@@ -960,7 +960,7 @@ Money: `DECIMAL(12,2)` — never floats. Grades: `DECIMAL(6,2)` for computed val
 | `user_permission` | Direct grants/denies for exceptions | `user_id`, `permission_id`, `effect` (`allow`/`deny`), `expires_at`, `reason` | UQ(`user_id`,`permission_id`) |
 | `login_histories` | Auth events | `id`, `user_id` (nullable — failed logins on unknown emails), `attempted_identifier`, `event` (`login`,`logout`,`failed`,`locked`,`password_reset`), `ip_address`, `user_agent`, `succeeded`, `created_at` | IDX(`user_id`,`created_at`), IDX(`ip_address`) |
 | `sessions` | Framework session store (DB driver) | standard | IDX(`user_id`), IDX(`last_activity`) |
-| `audit_logs` | See §14 | `id`, `user_id`, `auditable_type`, `auditable_id`, `event`, `old_values` JSON, `new_values` JSON, `reason`, `ip_address`, `user_agent`, `created_at` | IDX(`auditable_type`,`auditable_id`), IDX(`user_id`,`created_at`), IDX(`event`,`created_at`) |
+| `audit_logs` | See §17 | `id`, `user_id` (nullable — system actions), `impersonator_id` (nullable), `auditable_type`, `auditable_id`, `event`, `old_values` JSON, `new_values` JSON, `reason`, `ip_address`, `user_agent`, `context` JSON, `created_at` (no `updated_at` — append-only) | IDX(`auditable_type`,`auditable_id`), IDX(`user_id`,`created_at`), IDX(`event`,`created_at`) |
 | `settings` | Key-value configuration | `key` (unique), `value` (JSON), `group`, `type`, `is_public` | UQ(`key`) |
 
 **Direct user permissions (`user_permission`) are an escape hatch, not a pattern.** They exist because real schools always have one person who needs one extra thing, and forcing a new role for each such case produces role sprawl. The `deny` effect and `expires_at` make temporary elevation possible and self-cleaning.
@@ -1065,7 +1065,7 @@ The `enrollment_id` on `attendance_records` is deliberate redundancy alongside `
 | `fee_schedules` | Amounts by year/level | `id`, `academic_year_id`, `grade_level_id`, `fee_type_id`, `amount`, `installments` |
 | `student_ledger_entries` | **Append-only** charges and credits | `id`, `enrollment_id`, `student_id`, `entry_type` (`charge`,`payment`,`discount`,`adjustment`,`void`), `fee_type_id` (nullable), `amount` DECIMAL(12,2) signed, `reference_type`, `reference_id`, `description`, `posted_by`, `posted_at`, `voided_by`, `voided_at`, `void_reason` |
 | `payments` | Payment events | `id`, `receipt_no` (unique), `student_id`, `enrollment_id`, `amount`, `method`, `reference_no`, `received_by`, `received_at`, `status` (`posted`,`voided`), `voided_by`, `void_reason` |
-| `files` | Polymorphic file registry | `id`, `disk`, `path`, `original_name`, `mime_type`, `size_bytes`, `checksum_sha256`, `visibility` (`private`,`internal`,`public`), `attachable_type`, `attachable_id`, `uploaded_by`, `created_at` |
+| `files` | Polymorphic file registry | `id`, `disk`, `path`, `original_name`, `mime_type`, `size_bytes`, `checksum_sha256`, `visibility` (`private`,`internal`,`public`), `attachable_type`, `attachable_id`, `uploaded_by`, `superseded_at` (nullable — set when replaced, §19.4), `created_at`, `updated_at`, soft deletes |
 | `books`, `book_copies`, `loans`, `fines` | Library (optional module) | Standard catalog/circulation shape; isolated from the academic spine |
 
 **Balance is derived**, not stored: `SUM(amount)` over non-voided `student_ledger_entries` for an enrollment. If this becomes a performance problem (it will not at this scale), add a materialized `student_balances` cache updated inside the same transaction — never a directly editable field.
@@ -1130,7 +1130,7 @@ Avoid indexing low-cardinality columns alone (`sex`, boolean flags). Composite i
 
 | Applied | Not applied (use status/void) |
 |---|---|
-| `users`, `students`, `employees`, `guardians`, `subjects`, `sections`, `announcements`, `rooms`, `books` | `enrollments`, `class_grades`, `attendance_records`, `payments`, `student_ledger_entries`, `audit_logs`, `class_grade_histories`, `login_histories` |
+| `users`, `students`, `employees`, `guardians`, `subjects`, `sections`, `announcements`, `rooms`, `books`, `files` (physical deletion by scheduled job after 30 days, §19.4) | `enrollments`, `class_grades`, `attendance_records`, `payments`, `student_ledger_entries`, `audit_logs`, `class_grade_histories`, `login_histories` |
 
 Rule: if a row participates in a legal, financial, or academic record, it gets a lifecycle status and is never deleted. If a row is reference data or user-generated content where an accidental delete is recoverable and meaningful, it gets `deleted_at`.
 

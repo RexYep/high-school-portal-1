@@ -134,7 +134,7 @@ path "just for the importer" or "just for the seeder". Call the service.
 No `delete()` on: enrollments, class_grades, attendance_records, payments, student_ledger_entries,
 audit_logs, class_grade_histories, login_histories. Use status/void semantics.
 Soft deletes apply only to: users, students, employees, guardians, subjects, sections, rooms,
-announcements.
+announcements, files (row soft-deleted; physical file purged by a scheduled job after 30 days).
 
 ### Validation is server-side
 Every write action has a Form Request with explicit rules. Never `$model->update($request->all())`.
