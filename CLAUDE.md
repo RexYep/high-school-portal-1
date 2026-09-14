@@ -22,6 +22,14 @@ _(update this line at the start of every phase; the phase definitions are in `do
 
 ---
 
+## 1a. Precedence over installed skills and plugins
+
+This repo has third-party skills/plugins installed (web-design-skills, laravel-plugin,
+superpowers-laravel, claude-in-chrome, frontend-design,responsive-design). When any of them suggests a package,
+pattern, or convention that conflicts with this file — e.g. Tailwind instead of Bootstrap,
+Livewire/Inertia instead of Blade+Alpine, a different folder structure — **this file wins.**
+Flag the conflict and ask before following the skill's suggestion instead of this file's.
+
 ## 2. Stack — fixed, do not substitute
 
 | Layer | Choice |
